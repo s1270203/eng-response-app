@@ -1,0 +1,11 @@
+services:
+  react-app:
+    container_name: react-pwa-app
+    build:
+      context: .
+    volumes:
+      - .:/app
+    ports:
+      - "3000:3000"
+    stdin_open: true
+    tty: true
