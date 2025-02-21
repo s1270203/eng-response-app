@@ -19,7 +19,7 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv
 RUN /usr/local/bin/aws --version
 
 # アプリの依存関係をインストール
-# COPY package.json package-lock.json ./
+COPY package.json package-lock.json ./
 # RUN npm install --legacy-peer-deps
 
 COPY . .
