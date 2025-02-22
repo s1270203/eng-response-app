@@ -33,6 +33,7 @@ export default function Home() {
   // 録音開始
   const startRecording = (event) => {
     event.preventDefault(); // 🔹 長押し時のデフォルト動作を無効化
+    event.stopPropagation(); // 🔹 他のイベントの伝播を防ぐ
     setIsRecording(true);
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -113,6 +114,8 @@ const fetchChatGPTResponse = async (text) => {
         onMouseDown={startRecording}
         onTouchStart={startRecording}
         onContextMenu={(e) => e.preventDefault()} // 🔹 長押しの右クリックメニュー無効化
+        onSelect={(e) => e.preventDefault()} // 🔹 選択メニューが出ないようにする
+        onDragStart={(e) => e.preventDefault()} // 🔹 ドラッグ時のメニュー防止
       >
         🎤
       </button>
