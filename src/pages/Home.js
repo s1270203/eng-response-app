@@ -31,7 +31,8 @@ export default function Home() {
   }, [isRecording]);
 
   // 録音開始
-  const startRecording = () => {
+  const startRecording = (event) => {
+    event.preventDefault(); // 🔹 長押し時のデフォルト動作を無効化
     setIsRecording(true);
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -69,27 +70,28 @@ export default function Home() {
     setIsRecording(false);
   };
 
-  // ChatGPT にテキストを送信し、返答を取得
-  const fetchChatGPTResponse = async (text) => {
-    try {
-      const chatResponse = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: mode === "casual"
-              ? "You are a friendly native English speaker who responds in a natural and casual way."
-              : "You are a professional native English speaker who responds formally and politely.",
-          },
-          { role: "user", content: text },
-        ],
-      });
+// ChatGPT にテキストを送信し、返答を取得
+const fetchChatGPTResponse = async (text) => {
+  try {
+    const chatResponse = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content:
+            mode === "casual"
+              ? "You are a friendly native English speaker who responds in a fun, natural, and relaxed way, as if talking to a close friend. Use casual phrases, contractions, and slang where appropriate."
+              : "You are a professional native English speaker who responds in a respectful, polite, and formal way, as if talking to a superior at work. Use professional vocabulary and proper grammar.",
+        },
+        { role: "user", content: text },
+      ],
+    });
 
-      setResponse(chatResponse.choices[0].message.content);
-    } catch (error) {
-      console.error("ChatGPT API エラー:", error);
-    }
-  };
+    setResponse(chatResponse.choices[0].message.content);
+  } catch (error) {
+    console.error("ChatGPT API エラー:", error);
+  }
+};
 
   return (
     <div className={styles.container}>
@@ -106,8 +108,13 @@ export default function Home() {
       <h1 className={styles.title}>英会話アシスタント</h1>
 
       {/* 録音ボタン */}
-      <button className={styles.recordButton} onMouseDown={startRecording} onTouchStart={startRecording}>
-        録音
+      <button
+        className={styles.recordButton}
+        onMouseDown={startRecording}
+        onTouchStart={startRecording}
+        onContextMenu={(e) => e.preventDefault()} // 🔹 長押しの右クリックメニュー無効化
+      >
+        🎤
       </button>
 
       {/* モーダル（録音中） */}
