@@ -1,3 +1,5 @@
+/* eslint-disable no-restricted-globals */
+
 const CACHE_NAME = "eng-conversation-pwa-cache-v1";
 const urlsToCache = ["/", "/index.html", "/manifest.json"];
 
