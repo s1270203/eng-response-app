@@ -1,5 +1,9 @@
 /* eslint-disable no-restricted-globals */
 
+import { precacheAndRoute } from "workbox-precaching";
+
+precacheAndRoute(self.__WB_MANIFEST || []);
+
 const CACHE_NAME = "eng-conversation-pwa-cache-v1";
 const urlsToCache = ["/", "/index.html", "/manifest.json"];
 
