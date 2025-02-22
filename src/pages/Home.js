@@ -11,7 +11,7 @@ export default function Home() {
   const [mode, setMode] = useState("casual");
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
-  const [response, setResponse] = useState("");
+  const [responses, setResponses] = useState([]); // 🔹 複数の返答を保存
   const recognitionRef = useRef(null);
 
   // 録音の開始・停止を切り替える関数
@@ -42,7 +42,7 @@ export default function Home() {
     recognition.onresult = (event) => {
       const text = event.results[0][0].transcript;
       setTranscript(text);
-      fetchChatGPTResponse(text); // 🔹 AI に送信して返答を取得
+      fetchChatGPTResponses(text); // 🔹 3 つの返答を取得
     };
 
     recognition.onerror = (event) => {
@@ -62,24 +62,39 @@ export default function Home() {
     setIsRecording(false);
   };
 
-  // ChatGPT にテキストを送信し、返答を取得
-  const fetchChatGPTResponse = async (text) => {
+  // ChatGPT にテキストを送信し、3 つの返答を取得
+  const fetchChatGPTResponses = async (text) => {
     try {
-      const chatResponse = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content:
-              mode === "casual"
-                ? "You are a friendly native English speaker who responds in a fun, natural, and relaxed way, as if talking to a close friend. Use casual phrases, contractions, and slang where appropriate."
-                : "You are a professional native English speaker who responds in a respectful, polite, and formal way, as if talking to a superior at work. Use professional vocabulary and proper grammar.",
-          },
-          { role: "user", content: text },
-        ],
+      // ベースのシステムメッセージ（カジュアル or フォーマル）
+      const baseMessage =
+        mode === "casual"
+          ? "You are a friendly native English speaker who responds in a fun, natural, and relaxed way, as if talking to a close friend. Use casual phrases, contractions, and slang where appropriate."
+          : "You are a professional native English speaker who responds in a respectful, polite, and formal way, as if talking to a superior at work. Use professional vocabulary and proper grammar.";
+  
+      // 異なるバリエーションを出すためのプロンプトリスト
+      const variations = [
+        "Please provide a different response.",
+        "Give me another way to say it.",
+        "Offer a slightly unique response.",
+      ];
+  
+      // 3 つの異なるリクエストを作成
+      const responsePromises = variations.map(async (variation) => {
+        const chatResponse = await openai.chat.completions.create({
+          model: "gpt-3.5-turbo",
+          messages: [
+            { role: "system", content: baseMessage },
+            { role: "user", content: text },
+            { role: "user", content: variation }, // 🔹 各リクエストに異なるバリエーションを追加
+          ],
+        });
+  
+        return chatResponse.choices[0].message.content;
       });
-
-      setResponse(chatResponse.choices[0].message.content);
+  
+      // すべてのリクエストを並列処理
+      const responses = await Promise.all(responsePromises);
+      setResponses(responses);
     } catch (error) {
       console.error("ChatGPT API エラー:", error);
     }
@@ -101,7 +116,7 @@ export default function Home() {
 
       {/* 録音ボタン（クリックで開始/停止） */}
       <button className={styles.recordButton} onClick={toggleRecording}>
-        {isRecording ? "⏹️ " : "🎤 "}
+        {isRecording ? "⏹️" : "🎤"}
       </button>
 
       {/* モーダル（録音中） */}
@@ -122,11 +137,17 @@ export default function Home() {
         </div>
       )}
 
-      {/* AI の返答表示 */}
-      {response && (
+      {/* AI の返答表示（3 つの例をリストで表示） */}
+      {responses.length > 0 && (
         <div className={`${styles.responseContainer} ${mode === "casual" ? styles.casual : styles.formal}`}>
           <h3>{mode === "casual" ? "カジュアルな返答:" : "フォーマルな返答:"}</h3>
-          <p className={styles.transcript}>{response}</p>
+          <ul className={styles.responseList}>
+            {responses.map((resp, index) => (
+              <li key={index} className={styles.responseItem}>
+                {resp}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
