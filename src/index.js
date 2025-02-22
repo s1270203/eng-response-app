@@ -2,10 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
-import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
 
-serviceWorkerRegistration.register(); // 🚀 PWA を有効化
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
