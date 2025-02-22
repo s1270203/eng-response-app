@@ -107,7 +107,7 @@ export default function Home() {
 
       {/* 録音ボタン */}
       <button className={styles.recordButton} onMouseDown={startRecording} onTouchStart={startRecording}>
-        録音
+        🎤
       </button>
 
       {/* モーダル（録音中） */}
