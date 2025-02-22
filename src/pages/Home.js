@@ -14,26 +14,17 @@ export default function Home() {
   const [response, setResponse] = useState("");
   const recognitionRef = useRef(null);
 
-  useEffect(() => {
-    const handleMouseUp = () => {
-      stopRecording();
-    };
-
+  // 録音の開始・停止を切り替える関数
+  const toggleRecording = () => {
     if (isRecording) {
-      document.addEventListener("mouseup", handleMouseUp);
-      document.addEventListener("mouseleave", handleMouseUp);
+      stopRecording();
+    } else {
+      startRecording();
     }
-
-    return () => {
-      document.removeEventListener("mouseup", handleMouseUp);
-      document.removeEventListener("mouseleave", handleMouseUp);
-    };
-  }, [isRecording]);
+  };
 
   // 録音開始
-  const startRecording = (event) => {
-    event.preventDefault(); // 🔹 長押し時のデフォルト動作を無効化
-    event.stopPropagation(); // 🔹 他のイベントの伝播を防ぐ
+  const startRecording = () => {
     setIsRecording(true);
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -51,7 +42,7 @@ export default function Home() {
     recognition.onresult = (event) => {
       const text = event.results[0][0].transcript;
       setTranscript(text);
-      fetchChatGPTResponse(text);
+      fetchChatGPTResponse(text); // 🔹 AI に送信して返答を取得
     };
 
     recognition.onerror = (event) => {
@@ -71,28 +62,28 @@ export default function Home() {
     setIsRecording(false);
   };
 
-// ChatGPT にテキストを送信し、返答を取得
-const fetchChatGPTResponse = async (text) => {
-  try {
-    const chatResponse = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content:
-            mode === "casual"
-              ? "You are a friendly native English speaker who responds in a fun, natural, and relaxed way, as if talking to a close friend. Use casual phrases, contractions, and slang where appropriate."
-              : "You are a professional native English speaker who responds in a respectful, polite, and formal way, as if talking to a superior at work. Use professional vocabulary and proper grammar.",
-        },
-        { role: "user", content: text },
-      ],
-    });
+  // ChatGPT にテキストを送信し、返答を取得
+  const fetchChatGPTResponse = async (text) => {
+    try {
+      const chatResponse = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+          {
+            role: "system",
+            content:
+              mode === "casual"
+                ? "You are a friendly native English speaker who responds in a fun, natural, and relaxed way, as if talking to a close friend. Use casual phrases, contractions, and slang where appropriate."
+                : "You are a professional native English speaker who responds in a respectful, polite, and formal way, as if talking to a superior at work. Use professional vocabulary and proper grammar.",
+          },
+          { role: "user", content: text },
+        ],
+      });
 
-    setResponse(chatResponse.choices[0].message.content);
-  } catch (error) {
-    console.error("ChatGPT API エラー:", error);
-  }
-};
+      setResponse(chatResponse.choices[0].message.content);
+    } catch (error) {
+      console.error("ChatGPT API エラー:", error);
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -108,16 +99,9 @@ const fetchChatGPTResponse = async (text) => {
       {/* タイトル */}
       <h1 className={styles.title}>英会話アシスタント</h1>
 
-      {/* 録音ボタン */}
-      <button
-        className={styles.recordButton}
-        onMouseDown={startRecording}
-        onTouchStart={startRecording}
-        onContextMenu={(e) => e.preventDefault()} // 🔹 長押しの右クリックメニュー無効化
-        onSelect={(e) => e.preventDefault()} // 🔹 選択メニューが出ないようにする
-        onDragStart={(e) => e.preventDefault()} // 🔹 ドラッグ時のメニュー防止
-      >
-        🎤
+      {/* 録音ボタン（クリックで開始/停止） */}
+      <button className={styles.recordButton} onClick={toggleRecording}>
+        {isRecording ? "⏹️ " : "🎤 "}
       </button>
 
       {/* モーダル（録音中） */}
