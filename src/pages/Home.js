@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import styles from "./Home.module.css";
 import OpenAI from "openai";
 
@@ -11,7 +11,7 @@ export default function Home() {
   const [mode, setMode] = useState("casual");
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
-  const [responses, setResponses] = useState([]); // 🔹 複数の返答を保存
+  const [responses, setResponses] = useState([]); //複数の返答を保存
   const recognitionRef = useRef(null);
 
   // 録音の開始・停止を切り替える関数
@@ -42,7 +42,7 @@ export default function Home() {
     recognition.onresult = (event) => {
       const text = event.results[0][0].transcript;
       setTranscript(text);
-      fetchChatGPTResponses(text); // 🔹 3 つの返答を取得
+      fetchChatGPTResponses(text); //3つの返答を取得
     };
 
     recognition.onerror = (event) => {
@@ -62,7 +62,7 @@ export default function Home() {
     setIsRecording(false);
   };
 
-  // ChatGPT にテキストを送信し、3 つの返答を取得
+  // ChatGPT にテキストを送信し、3つの返答を取得
   const fetchChatGPTResponses = async (text) => {
     try {
       // ベースのシステムメッセージ（カジュアル or フォーマル）
@@ -78,14 +78,14 @@ export default function Home() {
         "Offer a slightly unique response.",
       ];
   
-      // 3 つの異なるリクエストを作成
+      // 3つの異なるリクエストを作成
       const responsePromises = variations.map(async (variation) => {
         const chatResponse = await openai.chat.completions.create({
           model: "gpt-3.5-turbo",
           messages: [
             { role: "system", content: baseMessage },
             { role: "user", content: text },
-            { role: "user", content: variation }, // 🔹 各リクエストに異なるバリエーションを追加
+            { role: "user", content: variation }, //各リクエストに異なるバリエーションを追加
           ],
         });
   
